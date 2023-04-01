@@ -1,17 +1,12 @@
-﻿using System;
+using System;
 using Android.App;
 using Android.OS;
-using Android.Runtime;
 using Android.Views;
-using AndroidX.AppCompat.Widget;
 using AndroidX.AppCompat.App;
-using Google.Android.Material.FloatingActionButton;
 using Google.Android.Material.Snackbar;
-using Android.Hardware.Camera2;
 using Android.Media;
 using Android.Widget;
 using Xamarin.Essentials;
-using Android.Graphics;
 using System.IO;
 using Plugin.Media.Abstractions;
 using Plugin.Media;
@@ -71,7 +66,35 @@ namespace BlindNavigatorV07
         }
         private void Sound(int ObjectNumber)
         {
-            if (ObjectNumber == 1)
+            if (ObjectNumber == 1) //стіна
+            {
+                // Initialize the MediaPlayer object
+                mediaPlayer = MediaPlayer.Create(this, Resource.Raw.Task1);
+
+                mediaPlayer.Start();
+            }
+            else if (ObjectNumber == 2) //машина
+            {
+                // Initialize the MediaPlayer object
+                mediaPlayer = MediaPlayer.Create(this, Resource.Raw.Task1);
+
+                mediaPlayer.Start();
+            }
+            else if (ObjectNumber == 3) //людина
+            {
+                // Initialize the MediaPlayer object
+                mediaPlayer = MediaPlayer.Create(this, Resource.Raw.Task1);
+
+                mediaPlayer.Start();
+            }
+            else if (ObjectNumber == 4) //стовп
+            {
+                // Initialize the MediaPlayer object
+                mediaPlayer = MediaPlayer.Create(this, Resource.Raw.Task1);
+
+                mediaPlayer.Start();
+            }
+            else if (ObjectNumber == 0) //нічого
             {
                 // Initialize the MediaPlayer object
                 mediaPlayer = MediaPlayer.Create(this, Resource.Raw.Task1);
@@ -94,10 +117,8 @@ namespace BlindNavigatorV07
                 await photoFile.GetStream().CopyToAsync(memoryStream);
                 byte[] imageData = memoryStream.ToArray();
 
-                // Create a Bitmap from the image data
-                Bitmap image = BitmapFactory.DecodeByteArray(imageData, 0, imageData.Length);
-
-                ObjectNumber = ObjectDetection.Detect(image);
+                ObjectDetection detector=new ObjectDetection();
+                ObjectNumber =detector.Detect(imageData);
 
                 Sound(ObjectNumber);
             }
