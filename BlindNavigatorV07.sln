@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlindNavigatorV07", "BlindNavigatorV07\BlindNavigatorV07.csproj", "{4CD8F801-7451-4DE1-B294-46C7088F3C73}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YOLOv4MLNet", "..\YOLOv4MLNet\YOLOv4MLNet\YOLOv4MLNet.csproj", "{74EB19AC-5236-4C82-8912-55469781181C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerTCP", "ServerTCP\ServerTCP.csproj", "{B07E4490-767D-4728-B52A-6E98445F8625}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,10 +19,10 @@ Global
 		{4CD8F801-7451-4DE1-B294-46C7088F3C73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CD8F801-7451-4DE1-B294-46C7088F3C73}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4CD8F801-7451-4DE1-B294-46C7088F3C73}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{74EB19AC-5236-4C82-8912-55469781181C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{74EB19AC-5236-4C82-8912-55469781181C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{74EB19AC-5236-4C82-8912-55469781181C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{74EB19AC-5236-4C82-8912-55469781181C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B07E4490-767D-4728-B52A-6E98445F8625}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B07E4490-767D-4728-B52A-6E98445F8625}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B07E4490-767D-4728-B52A-6E98445F8625}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B07E4490-767D-4728-B52A-6E98445F8625}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
