@@ -9,13 +9,25 @@ using static Microsoft.ML.Transforms.Image.ImageResizingEstimator;
 
 namespace YOLOv4MLNet
 {
+    /// <summary>
+    /// Represents an object recognition class that utilizes YOLOv4 model for detection.
+    /// </summary>
     public class ObjectRecognition
     {
+
+        /// <summary>
+        /// Path to the onnx yolov4 model
+        /// <see cref="https://github.com/onnx/models/tree/main/vision/object_detection_segmentation/yolov4"/>
+        /// </summary>
         const string modelPath = @"C:\Users\Pep\source\repos\YOLOv4MLNet\YOLOv4MLNet\DataStructures\Model\yolov4.onnx";
 
         static readonly string[] classesNames = new string[] { "person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "sofa", "pottedplant", "bed", "diningtable", "toilet", "tvmonitor", "laptop", "mouse", "remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush" };
 
         PredictionEngine<YoloV4BitmapData, YoloV4Prediction> predictionEngine = null;
+        
+        /// <summary>
+        /// Trains the model.
+        /// </summary>
         public void trainModel()
         {
             MLContext mlContext = new MLContext();
@@ -49,7 +61,11 @@ namespace YOLOv4MLNet
             // Create prediction engine
             predictionEngine = mlContext.Model.CreatePredictionEngine<YoloV4BitmapData, YoloV4Prediction>(model);
         }
-
+        /// <summary>
+        /// Process image
+        /// </summary>
+        /// <param name="ImageToProcess"> byte representation of an image</param>
+        /// <returns>YoloV4Result class that represents a result of object recognition</returns>
         public IReadOnlyList<YoloV4Result> ProcessImage(byte[] ImageToProcess)
         {
 
