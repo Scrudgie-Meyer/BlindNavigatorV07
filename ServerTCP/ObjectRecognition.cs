@@ -11,13 +11,12 @@ namespace YOLOv4MLNet
 {
     public class ObjectRecognition
     {
-        // Model path
-        // Model link: https://github.com/onnx/models/blob/main/vision/object_detection_segmentation/yolov4/model/yolov4.onnx
-        const string modelPath = @"";
+        const string modelPath = @"C:\Users\Pep\source\repos\YOLOv4MLNet\YOLOv4MLNet\DataStructures\Model\yolov4.onnx";
 
         static readonly string[] classesNames = new string[] { "person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "sofa", "pottedplant", "bed", "diningtable", "toilet", "tvmonitor", "laptop", "mouse", "remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush" };
 
-        public static IReadOnlyList<YoloV4Result> ProcessImage(byte[] ImageToProcess)
+        PredictionEngine<YoloV4BitmapData, YoloV4Prediction> predictionEngine = null;
+        public void trainModel()
         {
             MLContext mlContext = new MLContext();
 
@@ -48,7 +47,11 @@ namespace YOLOv4MLNet
             var model = pipeline.Fit(mlContext.Data.LoadFromEnumerable(new List<YoloV4BitmapData>()));
 
             // Create prediction engine
-            var predictionEngine = mlContext.Model.CreatePredictionEngine<YoloV4BitmapData, YoloV4Prediction>(model);
+            predictionEngine = mlContext.Model.CreatePredictionEngine<YoloV4BitmapData, YoloV4Prediction>(model);
+        }
+
+        public IReadOnlyList<YoloV4Result> ProcessImage(byte[] ImageToProcess)
+        {
 
             var sw = new Stopwatch();
             sw.Start();

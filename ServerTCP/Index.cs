@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Drawing;
 using System.Collections;
+using Microsoft.ML;
 
 namespace YOLOv4MLNet
 {
@@ -26,6 +27,11 @@ namespace YOLOv4MLNet
 
             _listener.Start();
 
+            var recognitionModel = new ObjectRecognition();
+
+            recognitionModel.trainModel();
+
+
             while (true)
             {
                 try
@@ -34,7 +40,7 @@ namespace YOLOv4MLNet
                     Console.WriteLine($"New client connected: {client.Client.RemoteEndPoint}");
 
                     // Handle client request asynchronously
-                    _ = Task.Run(() => HandleClient(client));
+                    _ = Task.Run(() => HandleClient(client, recognitionModel));
                 }
                 catch (Exception ex)
                 {
@@ -43,7 +49,7 @@ namespace YOLOv4MLNet
             }
         }
 
-        private async Task HandleClient(TcpClient client)
+        private async Task HandleClient(TcpClient client, ObjectRecognition model)
         {
             try
             {
@@ -51,10 +57,17 @@ namespace YOLOv4MLNet
                 NetworkStream stream = client.GetStream();
 
                 // Read image data from the client
-                byte[] buffer = new byte[client.ReceiveBufferSize];
+                byte[] buffer = new byte[64 * 1024];
+                await Task.Delay(100);
+
                 int bytesRead = await stream.ReadAsync(buffer, 0, client.ReceiveBufferSize);
                 byte[] imageData = new byte[bytesRead];
                 Array.Copy(buffer, imageData, bytesRead);
+
+                int byteSize = imageData.Length;
+                double kiloSize = (double)byteSize / 1024;
+
+                Console.WriteLine($"{kiloSize} + kB");
 
                 Directory.CreateDirectory("logs");
                 string folderPath = @"logs";
@@ -78,7 +91,7 @@ namespace YOLOv4MLNet
                 }
 
                 // Process image and get list of objects
-                var objectsOnImage = ObjectRecognition.ProcessImage(imageData);
+                var objectsOnImage = model.ProcessImage(imageData);
 
                 // Serialize list of objects to JSON
                 string json = JsonConvert.SerializeObject(objectsOnImage);
