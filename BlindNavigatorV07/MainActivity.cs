@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using Android.App;
 using Android.OS;
 using Android.Views;
@@ -10,6 +11,18 @@ using Xamarin.Essentials;
 using System.IO;
 using Plugin.Media.Abstractions;
 using Plugin.Media;
+using System.Linq;
+using System.Collections.Generic;
+using Android.Graphics;
+using System.Reflection;
+using System.Net.Sockets;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using YOLOv4MLNet.DataStructures;
+using Java.Util;
 
 namespace BlindNavigatorV07
 {
@@ -21,8 +34,6 @@ namespace BlindNavigatorV07
         private MediaPlayer mediaPlayer;
         protected override async void OnCreate(Bundle savedInstanceState)
         {
-          
-
 
             RequestWindowFeature(WindowFeatures.NoTitle);
             base.OnCreate(savedInstanceState);
@@ -61,48 +72,14 @@ namespace BlindNavigatorV07
         private void Procedure()
         {
             int ObjectNumber = 0;
-            
+
             TakePhoto(ObjectNumber);
         }
         private void Sound(int ObjectNumber)
         {
-            if (ObjectNumber == 1) //стіна
-            {
-                // Initialize the MediaPlayer object
-                mediaPlayer = MediaPlayer.Create(this, Resource.Raw.Task1);
-
-                mediaPlayer.Start();
-            }
-            else if (ObjectNumber == 2) //машина
-            {
-                // Initialize the MediaPlayer object
-                mediaPlayer = MediaPlayer.Create(this, Resource.Raw.Task1);
-
-                mediaPlayer.Start();
-            }
-            else if (ObjectNumber == 3) //людина
-            {
-                // Initialize the MediaPlayer object
-                mediaPlayer = MediaPlayer.Create(this, Resource.Raw.Task1);
-
-                mediaPlayer.Start();
-            }
-            else if (ObjectNumber == 4) //стовп
-            {
-                // Initialize the MediaPlayer object
-                mediaPlayer = MediaPlayer.Create(this, Resource.Raw.Task1);
-
-                mediaPlayer.Start();
-            }
-            else if (ObjectNumber == 0) //нічого
-            {
-                // Initialize the MediaPlayer object
-                mediaPlayer = MediaPlayer.Create(this, Resource.Raw.Task1);
-
-                mediaPlayer.Start();
-            }
+            throw new NotImplementedException();
         }
-        private async void TakePhoto(int ObjectNumber)
+        private async Task<List<YoloV4Result>> TakePhoto(int ObjectNumber)
         {
             var photoOptions = new StoreCameraMediaOptions
             {
@@ -110,18 +87,49 @@ namespace BlindNavigatorV07
                 CompressionQuality = 40
             };
             var photoFile = await CrossMedia.Current.TakePhotoAsync(photoOptions);
+            var Result = new List<YoloV4Result>();
+
+            IPAddress ServerIP = Dns.GetHostEntry(Dns.GetHostName()).AddressList[1];
+            const int ServerPort = 8080;
 
             //Read the image data into a byte array using a MemoryStream
-            using (var memoryStream = new MemoryStream())
+            using (var memoryStream = new System.IO.MemoryStream())
             {
+
                 await photoFile.GetStream().CopyToAsync(memoryStream);
-                byte[] imageData = memoryStream.ToArray();
 
-                ObjectDetection detector=new ObjectDetection();
-                ObjectNumber =detector.Detect(imageData);
+                var ImageByte = memoryStream.ToArray();
 
-                Sound(ObjectNumber);
+                string folderPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData);
+                string fileName = "image.jpg";
+                string filePath = System.IO.Path.Combine(folderPath, fileName);
+
+                // Check if the file already exists, and if so, generate a unique filename
+                int i = 1;
+                while (File.Exists(filePath))
+                {
+                    fileName = $"image({i}).jpg";
+                    filePath = System.IO.Path.Combine(folderPath, fileName);
+                    i++;
+                }
+
+                File.WriteAllBytes(System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), fileName), ImageByte);
+
+                TcpClient client = new TcpClient();
+                await client.ConnectAsync("10.0.2.2", ServerPort);
+
+                NetworkStream stream = client.GetStream();
+                await stream.WriteAsync(ImageByte, 0, ImageByte.Length);
+
+                byte[] buffer = new byte[client.ReceiveBufferSize];
+                int bytesRead = await stream.ReadAsync(buffer, 0, client.ReceiveBufferSize);
+                string json = System.Text.Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                client.Close();
+
+                Result = Newtonsoft.Json.JsonConvert.DeserializeObject<List<YoloV4Result>>(json);
+
             }
+            return Result;
         }
         public override bool OnCreateOptionsMenu(IMenu menu)
         {
@@ -142,7 +150,7 @@ namespace BlindNavigatorV07
 
         private void FabOnClick(object sender, EventArgs eventArgs)
         {
-            View view = (View) sender;
+            View view = (View)sender;
             Snackbar.Make(view, "Replace with your own action", Snackbar.LengthLong)
                 .SetAction("Action", (View.IOnClickListener)null).Show();
         }
