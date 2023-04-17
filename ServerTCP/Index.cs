@@ -12,6 +12,9 @@ using Microsoft.ML;
 
 namespace YOLOv4MLNet
 {
+    /// <summary>
+    /// Server class, represents a TCP server
+    /// </summary>
     class Server
     {
         private TcpListener _listener;
@@ -23,15 +26,18 @@ namespace YOLOv4MLNet
 
         public async Task Start()
         {
+
             Console.WriteLine($"Server started on port {_listener.LocalEndpoint}");
 
+            //Server set up
             _listener.Start();
 
             var recognitionModel = new ObjectRecognition();
 
+            //Train model
             recognitionModel.trainModel();
 
-
+            //Listen to the requests
             while (true)
             {
                 try
@@ -59,15 +65,17 @@ namespace YOLOv4MLNet
                 // Read image data from the client
                 byte[] buffer = new byte[64 * 1024];
                 await Task.Delay(100);
-
                 int bytesRead = await stream.ReadAsync(buffer, 0, client.ReceiveBufferSize);
                 byte[] imageData = new byte[bytesRead];
                 Array.Copy(buffer, imageData, bytesRead);
 
+                //Print the size of recieved data
                 int byteSize = imageData.Length;
                 double kiloSize = (double)byteSize / 1024;
 
                 Console.WriteLine($"{kiloSize} + kB");
+
+                //Logs the data
 
                 Directory.CreateDirectory("logs");
                 string folderPath = @"logs";
@@ -89,6 +97,8 @@ namespace YOLOv4MLNet
                     image = Image.FromStream(ms);
                     image.Save(filePath);
                 }
+
+                image.Dispose();
 
                 // Process image and get list of objects
                 var objectsOnImage = model.ProcessImage(imageData);

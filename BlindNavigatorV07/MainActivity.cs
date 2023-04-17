@@ -1,5 +1,6 @@
 using System;
-using System.Drawing;
+using System.Speech.Synthesis;
+using System.Speech.AudioFormat;
 using Android.App;
 using Android.OS;
 using Android.Views;
@@ -17,12 +18,12 @@ using Android.Graphics;
 using System.Reflection;
 using System.Net.Sockets;
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using YOLOv4MLNet.DataStructures;
 using Java.Util;
+using static Android.Content.ClipData;
 
 namespace BlindNavigatorV07
 {
@@ -69,28 +70,78 @@ namespace BlindNavigatorV07
             else button1.Text = "Start"; //Алгоритм зупинено
 
         }
-        private void Procedure()
-        {
-            int ObjectNumber = 0;
 
-            TakePhoto(ObjectNumber);
-        }
-        private void Sound(int ObjectNumber)
+        private async Task Procedure()
         {
-            throw new NotImplementedException();
+            var result = await TakePhoto();
+
+            await Sound(result);
+
         }
-        private async Task<List<YoloV4Result>> TakePhoto(int ObjectNumber)
+        private async Task Sound(List<YoloV4Result> result)
         {
+
+            var dict = new Dictionary<string, int>();
+
+            //Map the resualt of object recognition
+            if(result != null)
+            {
+                foreach (var resultItem in result)
+                {
+                    if (dict.ContainsKey(resultItem.Label))
+                    {
+                        dict[resultItem.Label]++;
+                    }
+                    else
+                    {
+                        dict.Add(resultItem.Label, 1);
+                    }
+                }
+            }
+
+            //Text to speech options
+            var settings = new SpeechOptions()
+            {
+                Volume = .75f,
+                Pitch = 1.0f
+            };
+
+            if(dict.Count == 0)
+            {
+                await TextToSpeech.SpeakAsync("There is no object on the photo", settings);
+            }
+            else
+            {
+                await TextToSpeech.SpeakAsync("There are ", settings);
+                foreach (var item in dict.Keys)
+                {
+                    if (dict[item] == 1)
+                    {
+                        await TextToSpeech.SpeakAsync($"1 {item}, ", settings);
+                    }
+                    else
+                    {
+                        await TextToSpeech.SpeakAsync($"{dict[item]} {item}s, ", settings);
+                    }
+                }
+                await TextToSpeech.SpeakAsync(" on the photo", settings);
+            }
+            
+
+        }
+        private async Task<List<YoloV4Result>> TakePhoto()
+        {
+            //Take photo on the phone
             var photoOptions = new StoreCameraMediaOptions
             {
-                PhotoSize = PhotoSize.Medium,
-                CompressionQuality = 40
+                PhotoSize = PhotoSize.Large,
+                CompressionQuality = 60
             };
             var photoFile = await CrossMedia.Current.TakePhotoAsync(photoOptions);
+            
             var Result = new List<YoloV4Result>();
-
-            IPAddress ServerIP = Dns.GetHostEntry(Dns.GetHostName()).AddressList[1];
             const int ServerPort = 8080;
+            const string ServerIp = "10.0.2.2";
 
             //Read the image data into a byte array using a MemoryStream
             using (var memoryStream = new System.IO.MemoryStream())
@@ -98,34 +149,26 @@ namespace BlindNavigatorV07
 
                 await photoFile.GetStream().CopyToAsync(memoryStream);
 
+                //Convert image to byte array
                 var ImageByte = memoryStream.ToArray();
 
-                string folderPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData);
-                string fileName = "image.jpg";
-                string filePath = System.IO.Path.Combine(folderPath, fileName);
-
-                // Check if the file already exists, and if so, generate a unique filename
-                int i = 1;
-                while (File.Exists(filePath))
-                {
-                    fileName = $"image({i}).jpg";
-                    filePath = System.IO.Path.Combine(folderPath, fileName);
-                    i++;
-                }
-
-                File.WriteAllBytes(System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), fileName), ImageByte);
-
+                //Make a connection to the server
                 TcpClient client = new TcpClient();
-                await client.ConnectAsync("10.0.2.2", ServerPort);
+                await client.ConnectAsync(ServerIp, ServerPort);
 
+                //Send image to the server
                 NetworkStream stream = client.GetStream();
                 await stream.WriteAsync(ImageByte, 0, ImageByte.Length);
 
+                //Receive resualts from the server
                 byte[] buffer = new byte[client.ReceiveBufferSize];
                 int bytesRead = await stream.ReadAsync(buffer, 0, client.ReceiveBufferSize);
                 string json = System.Text.Encoding.ASCII.GetString(buffer, 0, bytesRead);
+
+                //Close the connection
                 client.Close();
 
+                //Deserialize JSON object
                 Result = Newtonsoft.Json.JsonConvert.DeserializeObject<List<YoloV4Result>>(json);
 
             }

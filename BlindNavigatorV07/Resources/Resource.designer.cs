@@ -4812,7 +4812,22 @@ namespace BlindNavigatorV07
 		{
 			
 			// aapt resource value: 0x7F0E0000
-			public const int Task1 = 2131623936;
+			public const int car = 2131623936;
+			
+			// aapt resource value: 0x7F0E0001
+			public const int cat = 2131623937;
+			
+			// aapt resource value: 0x7F0E0002
+			public const int clear = 2131623938;
+			
+			// aapt resource value: 0x7F0E0003
+			public const int dog = 2131623939;
+			
+			// aapt resource value: 0x7F0E0004
+			public const int person = 2131623940;
+			
+			// aapt resource value: 0x7F0E0005
+			public const int truck = 2131623941;
 			
 			static Raw()
 			{
